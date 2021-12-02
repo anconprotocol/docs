@@ -37,10 +37,10 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Ancon Protocol',
+        title: 'Ancon docs',
         logo: {
-          alt: 'My Site Logo',
-          src: 'img/ancon.jpeg',
+          alt: 'Ancon Logo',
+          src: 'img/logo.svg',
         },
         items: [
           {
@@ -50,7 +50,7 @@ const config = {
             label: 'API',
           },
           {
-            href: 'https://github.com/Electronic-Signatures-Industries',
+            href: 'https://github.com/Electronic-Signatures-Industries/ancon-docs/',
             label: 'GitHub',
             position: 'right',
           },
