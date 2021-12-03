@@ -17,31 +17,28 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Easy to Use',
-    image: '/img/undraw_docusaurus_mountain.svg',
+    image: '',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Authenticity & Provenance for the Web3 Data Economy
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    image: '/img/undraw_docusaurus_tree.svg',
+    title: 'Any content',
+    image: '',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Ancon is a decentralized solution for the data economy safeguarding authenticity and provenance of any content.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    image: '/img/undraw_docusaurus_react.svg',
+    title: 'Seamless integrations across platforms',
+    image: '',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        DAG compatible schema onchain metadata
       </>
     ),
   },
@@ -51,7 +48,7 @@ function Feature({title, image, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <img className={styles.featureSvg} alt={title} src={image} />
+        <img className={styles.featureSvg} alt="" src={image} />
       </div>
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
