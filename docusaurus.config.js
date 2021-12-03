@@ -8,15 +8,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
-  url: 'https://Electronic-Signatures-Industries.github.io/',
-  baseUrl: '/',
+  url: 'https://electronic-signatures-industries.github.io/',
+  baseUrl: '/ancon-docs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'Electronic-Signatures-Industries', // Usually your GitHub org/user name.
   projectName: 'ancon-docs', // Usually your repo name.
   trailingSlash: false, // 
-  deploymentBranch: 'main',
+  deploymentBranch: 'deploy-gh',
 
   presets: [
     [
