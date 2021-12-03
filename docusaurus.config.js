@@ -9,7 +9,7 @@ const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
   url: 'https://electronic-signatures-industries.github.io/',
-  baseUrl: '/ancon-docs/',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
