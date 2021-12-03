@@ -15,6 +15,7 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'Electronic-Signatures-Industries', // Usually your GitHub org/user name.
   projectName: 'ancon-docs', // Usually your repo name.
+  trailingSlash: false, //
 
   presets: [
     [
