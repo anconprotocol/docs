@@ -13,8 +13,8 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'ifesa', // Usually your GitHub org/user name.
-  projectName: 'ancon', // Usually your repo name.
+  organizationName: 'Electronic-Signatures-Industries', // Usually your GitHub org/user name.
+  projectName: 'ancon-docs', // Usually your repo name.
 
   presets: [
     [
@@ -47,6 +47,12 @@ const config = {
             type: 'doc',
             docId: 'intro',
             position: 'left',
+            label: 'Docs',
+          },
+          {
+            type: 'doc',
+            docId: 'api/reference',
+            position: 'left',
             label: 'API',
           },
           {
@@ -63,8 +69,12 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'API',
+                label: 'Docs',
                 to: '/docs/intro',
+              },
+              {
+                label: 'API',
+                to: '/docs/api/reference',
               },
             ],
           },
@@ -73,11 +83,11 @@ const config = {
             items: [
               {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
+                href: 'https://discordapp.com/',
               },
               {
                 label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
+                href: 'https://twitter.com/',
               },
             ],
           },
