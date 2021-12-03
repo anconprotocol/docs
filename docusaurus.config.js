@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
-  url: 'https://docs.ancon.ipfs.pa',
+  url: 'https://Electronic-Signatures-Industries.github.io/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
