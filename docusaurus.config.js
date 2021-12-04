@@ -9,7 +9,8 @@ const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
   url: 'https://anconprotocol.github.io/',
-  baseUrl: '/',
+  baseUrl:
+    '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
@@ -17,7 +18,7 @@ const config = {
   projectName: 'docs', // Usually your repo name.
   trailingSlash: false, // 
   deploymentBranch: 'deploy-gh',
-
+  githubHost: 'github.com',
   presets: [
     [
       '@docusaurus/preset-classic',
