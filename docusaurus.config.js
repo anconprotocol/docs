@@ -8,13 +8,13 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
-  url: 'https://electronic-signatures-industries.github.io/',
-  baseUrl: '/ancon-docs/',
+  url: 'https://anconprotocol.github.io/',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'Electronic-Signatures-Industries', // Usually your GitHub org/user name.
-  projectName: 'ancon-docs', // Usually your repo name.
+  organizationName: 'anconprotocol', // Usually your GitHub org/user name.
+  projectName: 'docs', // Usually your repo name.
   trailingSlash: false, // 
   deploymentBranch: 'deploy-gh',
 
@@ -26,7 +26,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/Electronic-Signatures-Industries/ancon-docs',
+          editUrl: 'https://github.com/anconprotocol/ancon-docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -58,7 +58,7 @@ const config = {
             label: 'API',
           },
           {
-            href: 'https://github.com/Electronic-Signatures-Industries/ancon-docs/',
+            href: 'https://github.com/anconprotocol/ancon-docs/',
             label: 'GitHub',
             position: 'right',
           },
@@ -102,7 +102,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/Electronic-Signatures-Industries',
+                href: 'https://github.com/anconprotocol',
               },
             ],
           },
