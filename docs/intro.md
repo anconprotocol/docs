@@ -1,5 +1,6 @@
 ---
-slug: 1
+id: index
+slug: /
 sidebar_position: 1
 ---
 

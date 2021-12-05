@@ -9,7 +9,7 @@ const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
   url: 'https://anconprotocol.github.io/',
-  baseUrl: '/',
+  baseUrl: '/docs/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
@@ -48,7 +48,7 @@ const config = {
         items: [
           {
             type: 'doc',
-            docId: 'intro',
+            docId: 'index',
             position: 'left',
             label: 'Docs',
           },
@@ -73,7 +73,7 @@ const config = {
             items: [
               {
                 label: 'Docs',
-                to: '/intro',
+                to: '/docs/intro',
               },
               {
                 label: 'API',
