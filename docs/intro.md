@@ -10,20 +10,20 @@ Ancon protocol is a new kind of SDK and technology that can be used to implement
 
 ## API Reference
 
-- [Ancon Protocol node](/api/reference)
+- [Ancon Protocol node](/docs/api/reference)
 
 ## API - Core Features
 
-- [DAG compatible schema onchain metadata](/api/metadata)
-- [Cross chain transactions with trusted offchain gateways](/api/durin)
-- [Developing IPLD operations with GraphQL](/api/ipld)
-- [Working with subgraphs using Graphsync protocol](/api/graphsync)
+- [DAG compatible schema onchain metadata](/docs/api/metadata)
+- [Cross chain transactions with trusted offchain gateways](/docs/api/durin)
+- [Developing IPLD operations with GraphQL](/docs/api/ipld)
+- [Working with subgraphs using Graphsync protocol](/docs/api/graphsync)
 
 ## Tutorials
 
-- [EVM to EVM cross ownership metadata transfer](/tutorials/crossownership)
-- [EVM to Flow cross ownership metadata transfer](/tutorials/crossownership-flow)
+- [EVM to EVM cross ownership metadata transfer](/docs/tutorials/crossownership)
+- [EVM to Flow cross ownership metadata transfer](/docs/tutorials/crossownership-flow)
 
 ## Use cases
 
-- [Data unions](/tutorials/data-unions)
+- [Data unions](/docs/tutorials/data-unions)

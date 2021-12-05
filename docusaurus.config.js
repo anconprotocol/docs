@@ -10,7 +10,7 @@ const config = {
   tagline: 'Ancon Protocol Documentation',
   url: 'https://anconprotocol.github.io/',
   baseUrl:
-    '/docs/',
+    '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
