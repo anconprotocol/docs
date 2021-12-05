@@ -1,22 +1,21 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require('prism-react-renderer/themes/github')
+const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Ancon Protocol Docs',
   tagline: 'Ancon Protocol Documentation',
   url: 'https://anconprotocol.github.io/',
-  baseUrl:
-    '/docs/',
-  onBrokenLinks: 'throw',
+  baseUrl: '/',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'anconprotocol', // Usually your GitHub org/user name.
   projectName: 'docs', // Usually your repo name.
-  trailingSlash: false, // 
+  trailingSlash: false, //
   deploymentBranch: 'deploy-gh',
   githubHost: 'github.com',
   presets: [
@@ -28,6 +27,7 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/anconprotocol/ancon-docs',
+          routeBasePath: '/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -73,11 +73,11 @@ const config = {
             items: [
               {
                 label: 'Docs',
-                to: '/docs/intro',
+                to: '/intro',
               },
               {
                 label: 'API',
-                to: '/docs/api/reference',
+                to: '/api/reference',
               },
             ],
           },
@@ -115,6 +115,6 @@ const config = {
         darkTheme: darkCodeTheme,
       },
     }),
-};
+}
 
-module.exports = config;
+module.exports = config
