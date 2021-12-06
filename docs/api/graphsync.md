@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Subgraph networks
 
-Ancon Protocol node can also be used for DAG block exchange using GraphQL. The process starts with an indexer, a chain listener
+Ancon Protocol node can also be used for DAG block exchange using Graphsync. The process starts with an indexer, a chain listener
 which converts blocks in JSON to specific DAG format. Defaults to dagjson otherwise implement a custom DAG format.
 
 A subgraph network is where one or more nodes are in a Graphsync protocol network exchanging blocks. These blocks can have typed messages packets called extensions. With an actor like developer API, these extensions can be implemented with checks or assertions using hooks.
