@@ -2,16 +2,85 @@
 sidebar_position: 2
 ---
 
-#   Onchain metadata
+#   Onchain metadata and DAG blocks (Polygon SDK)
 
-## Solidity
+These onchain features are available in Ancon Protocol Chain powered by Polygon SDK. There are three post transaction hooks:
 
-```solidity
-struct Ancon721Metadata{
-  string uri;
-  string parent;
-  string didOwner;
+
+## AddOnchainMetadata hook event
+
+Creates a dag-json block containing Ancon721Metadata payload. Emits a StoreDagBlockDone event.
+
+
+## EncodeDagJson hook event
+
+Creates a dag-json block containing json payload. Emits a StoreDagBlockDone event.
+
+## EncodeDagCbor hook event
+
+Creates a dag-cbor block containing cbor payload. Emits a StoreDagBlockDone event.
+
+## Examples
+
+### Solidity
+
+```typescript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+contract OnchainMetadata {
+
+  event AddOnchainMetadata(
+    string name, 
+    string description, 
+    string indexed image, 
+    string indexed owner, 
+    string indexed parent, 
+    bytes sources
+  );
+
+  event EncodeDagJson(
+    string path, 
+    string hexdata
+  );
+
+  event EncodeDagCbor(
+    string path, 
+    string hexdata
+  );
+
+  event StoreDagBlockDone(
+    string path, 
+    string cid
+  );
+
+
+  constructor() {
+
+  }
+
+  function setOnchainMetadata(
+    string memory name, 
+    string memory description, 
+    string memory image, 
+    string memory owner, 
+    string memory parent, 
+    bytes memory sources
+  ) public{
+    emit AddOnchainMetadata(name, description, image, owner, parent, sources);
+  }
+
+  function encodeDagjsonBlock(
+    string memory path,
+    string memory hexdata
+  ) public returns (bool) {
+
+    emit EncodeDagJson(path, hexdata);
+
+    return true;
+  }
 }
+
 ```
 
 ## Metadata JSON Schema
@@ -69,9 +138,4 @@ const payload = {
 };
 
 
-const res = await ancon.metadata.add(payload)
-console.log(`https://gateway.dao.pa/ancon/${res.cid}`)
 ```
-
-**Mint or anchor** your Ancon metadata after its vetted by chain consensus protocol. The metadata is just a link to a gateway and always public.
-
