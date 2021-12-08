@@ -8,7 +8,16 @@ sidebar_position: 1
 
 ### Hybrid Smart Contracts protocol for secure offchain data economy
 
-Ancon protocol is a new kind of SDK and technology that can be used to implement secure offchain data integrations using best of breed offchain protocols like ipfs and any blockchain with smart contracts support .
+Ancon protocol is a new kind of SDK and technology that can be used to implement secure offchain data integrations using best of breed offchain protocols like ipfs and any blockchain with smart contracts support.
+
+
+## Ancon Protocol Chain - Polygon SDK
+
+Chain will host consensus related use cases for data economy. It is an EVM implementation which uses Polygon SDK and has Ancon Protocol libraries to work with DAGs and Graphsync. It supports Solidity smart contracts and has an experimental implementation for Rust contracts.
+
+## Ancon Protocol Node - L2 Gateway
+
+Node manages offchain data integrations and trusted offchain gateways.  It has DID web and DID key, Graphsync, and dag-json / dag-cbor technology support.
 
 
 ## Source code
