@@ -10,6 +10,7 @@ sidebar_position: 1
 
 Ancon protocol is a new kind of SDK and technology that can be used to implement secure offchain data integrations using best of breed offchain protocols like ipfs and any blockchain with smart contracts support.
 
+![Ancon_Products](https://user-images.githubusercontent.com/1248071/145845629-fc2b7e0d-4877-474e-87cb-ef205e35e159.png)
 
 ## Ancon Protocol Chain - Polygon SDK
 
