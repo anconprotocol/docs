@@ -2,86 +2,49 @@
 sidebar_position: 2
 ---
 
-#   Onchain metadata and DAG blocks (Polygon SDK)
+# Using a Verifiable DAG store
 
-These onchain features are available in Ancon Protocol Chain powered by Polygon SDK. There are three post transaction hooks:
+Ancon Protocol Node is an Layer 2, offchain DAG Store with verifiable data. Anyone can use it once they registered a DID with the L2, which will generate a vector commitment proof, if indeed the register exists or not in the merkle tree.
 
+Because there is no consensus involved, we can only be sure that it was signed by someone using a DID identifier. To be able to have a more decentralized feature, is recommended to anchor both DID and proofs in a ICS23 Vector Commitment compatible smart contract chain.
 
-## AddOnchainMetadata hook event
+Once is submitted to a onchain solution, any offchain operation can be properly validated onchain for any proofs.
 
-Creates a dag-json block containing Ancon721Metadata payload. Emits a StoreDagBlockDone event.
+## Staking and Validators
 
+Ancon Protocol will implement a smart contract based validator approach, where the incentives will be to batch proofs operations, validate them, and then submit or commit to protocol header updates. Using $ANCON token, validators will be able to stake and obtain a income by supporting the protocol.
 
-## EncodeDagJson hook event
+## Onchain metadata
 
-Creates a dag-json block containing json payload. Emits a StoreDagBlockDone event.
+To use DID identifier with onchain metadata:
 
-## EncodeDagCbor hook event
+### Smart contracts
 
-Creates a dag-cbor block containing cbor payload. Emits a StoreDagBlockDone event.
+1. Install or place `AnconProtocol.sol`
+2. The NFT Dapp or App will use these calls: `verifyProof`, `submitPacketWithProof`, `enrollL2Account` and `updateProtocolHeader`.
+3. Before starting, create a DID account and obtain the CID and username of the DID.
+4. Execute a hybrid smart contract and send the result as input for the next call.
+5. Prepare a Packet, which is the cross chain message, fill the packet message with the values returned from node API.
+6. Use your recently activated DID identifier to sign the message , and send it to  `submitPacketWithProof` for transaction.
+7. Once proof is submitted to L1, your packet is validated and anchored.
+
+### Client
+
+1. Use Node API to registerd DIDs.
+2. Following API requires DID authentication:
+- Any write DAG operation (JSON or CBOR)
+- Any hybrid smart contract transaction
+3. Following onchain operations requires gas and protocol fees:
+- `enrollL2Acccount`
+- `submitPacketWithProof`
+- `updateProtocolHeader`
+4. Verifiable DID with KYC (only Panama) has a KYC cost to verify ID.
+
 
 ## Examples
 
 ### Solidity
 
-```typescript
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
-
-contract OnchainMetadata {
-
-  event AddOnchainMetadata(
-    string name, 
-    string description, 
-    string indexed image, 
-    string indexed owner, 
-    string indexed parent, 
-    bytes sources
-  );
-
-  event EncodeDagJson(
-    string path, 
-    string hexdata
-  );
-
-  event EncodeDagCbor(
-    string path, 
-    string hexdata
-  );
-
-  event StoreDagBlockDone(
-    string path, 
-    string cid
-  );
-
-
-  constructor() {
-
-  }
-
-  function setOnchainMetadata(
-    string memory name, 
-    string memory description, 
-    string memory image, 
-    string memory owner, 
-    string memory parent, 
-    bytes memory sources
-  ) public{
-    emit AddOnchainMetadata(name, description, image, owner, parent, sources);
-  }
-
-  function encodeDagjsonBlock(
-    string memory path,
-    string memory hexdata
-  ) public returns (bool) {
-
-    emit EncodeDagJson(path, hexdata);
-
-    return true;
-  }
-}
-
-```
 
 ## Metadata JSON Schema
 

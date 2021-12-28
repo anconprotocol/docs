@@ -60,6 +60,9 @@ example of the returned object:
 {
   "cid": {
     "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
+  },
+  "proof": {
+    "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
   }
 }
 ```
@@ -176,6 +179,8 @@ example of the returned object:
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `path` | `string` | path |
+| `from` | `string` | DID identifier |
+| `signature` | `string` | signature as hex |
 | `data` | `object` | object to store |
 
 
@@ -210,6 +215,8 @@ example of the returned object:
 | ---- | ---- | ----------- |
 | `path` | `string` | path |
 | `data` | `object` | (base64) object to store |
+| `from` | `string` | DID identifier |
+| `signature` | `string` | signature as hex |
 
 
 
@@ -318,16 +325,6 @@ example of the returned object:
 ```
 <...data...>
 ```
-
-
-## `GET /v0/query`
-
-> GraphQL playground
-
-
-## `POST /v0/query`
-
-> GraphQL
 
 
 ## `POST /rpc`
