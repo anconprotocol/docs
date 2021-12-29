@@ -233,6 +233,7 @@ In this example, we'll use one of the easiest IPLD Operator, which is the `focus
 In Ancon Protocol Contracts SDK, you can use focused transform with `focused_transform_patch_str`
 
 ```rust
+
 #[derive(Clone, Copy, Debug)]
 pub struct Mutation;
 
@@ -286,23 +287,23 @@ The result must always be the previous and next packets.
 
 ## Smart Contract APIs
 
-### pub fn focused_transform_patch_str(cid: &str, path: &str, prev: &str, next: &str) -> String
+### `pub fn focused_transform_patch_str(cid: &str, path: &str, prev: &str, next: &str) -> String`
 
 Applies an IPLD focused transform using a patch design pattern for string node values
 
-### pub fn read_dag(cid: &str) -> Vec<u8>
+### `pub fn read_dag(cid: &str) -> Vec<u8>`
 
 Reads a cid from dag store
 
-### pub fn submit_proof(data: &str) -> String
+### `pub fn submit_proof(data: &str) -> String`
 
 Submits proof (offchain)
 
-### pub fn get_proof(cid: &str) -> String
+### `pub fn get_proof(cid: &str) -> String`
 
 Retrieves proof (offchain)
 
-### pub fn generate_proof(cid: &str) -> String
+### `pub fn generate_proof(cid: &str) -> String`
 
 Generates proof (offchain)
 
