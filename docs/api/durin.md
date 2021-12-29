@@ -12,87 +12,211 @@ A trustless setting onchain means the consensus of a blockchain is enough to val
 
 In cross chain use cases, there are many to accomplish this, one is with atomic swaps, whichi we'll use in parts, other is with ZK technology and other with protocols that are based on Merkle Proofs.
 
-## Trustless with Ancon Protocol
-
-We use `ICS23` for trustless, the current implementation supports any Cosmos chain and can be integrated with Ethereum and Flow. The setup can be found in the Cosmos middleware repo.
-
-## Trusted with Ancon Protocol
-
-The recommended way to use Ancon Protocol is with trusted, is oriented towards data economy use cases. For example, a data union needs to stream a batch of data from different sources, merge and compute using DAG blocks and then put these changes to blockchain.
-
-Before Ancon Protocol, you would have to develop most of these tasks, that can be mechaninc and repeatable.
 
 ## Design and Architecture of a Hybrid Smart Contract
 
-`Hybrid Smart Contracts` is the term used for integrating both offchain and onchain seamlessly in a secure way. To start using the Node SDK, these are the steps that needs to be planned.
-
-1. **Server side schemas**
-2. **DAG Operations or Mutation**
-3. **Smart Contract**
-4. **Onchain adapter**
-5. **Generate client bindings for schemas**
+`Hybrid Smart Contracts` is the term used for integrating both offchain and onchain seamlessly in a secure way. To start using the Node SDK.
 
 The Node SDK uses a set of technologies, the developer should have a good grasp of the following:
 
 - Go language
 - IPLD
 - GraphQL
-- Smart Contract language of the onchain implementation
+- Rust
 
-## Server side schemas
+## Create Rust GraphQL Query and Mutations
 
-Download the `github.com/anconprotocol.com/node-template` and label it with the name of your project.
+Download the `github.com/anconprotocol/contracts` and label it with the name of your project.
 
-Create your domain model or message model, you can call it `packet`, in `x/anconsync/codegen/graph/schema.graphqls`.
+The current source code has an example of a onchain DID ownership trasfer for ERC721 tokens.
 
+```rust
+use crate::sdk::focused_transform_patch_str;
+use crate::sdk::read_dag;
+use crate::sdk::submit_proof;
+use crate::sdk::{generate_proof, get_proof, read_dag_block, write_dag_block};
+use juniper::FieldResult;
 
-```graphql
-scalar Bytes
+extern crate juniper;
 
-schema {
-    query: Query
-    mutation: Transaction
+use juniper::{
+    graphql_object, EmptyMutation, EmptySubscription, FieldError, GraphQLEnum, GraphQLValue,
+    RootNode, Variables,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+
+use std::collections::HashMap;
+
+use std::str;
+use std::vec::*;
+
+pub struct Context {
+    pub metadata: HashMap<String, Ancon721Metadata>,
+    pub transfer: HashMap<String, MetadataPacket>,
 }
 
-type Ancon721Metadata {
-  name: String!
-  description: String!
-  image: String!
-  parent: String
-  owner: String
-  sources: [DagLink!]
+impl juniper::Context for Context {}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct MetadataPacket {
+    pub cid: String,
+    pub from_owner: String,
+    pub result_cid: String,
+    pub to_owner: String,
+    pub to_address: String,
+    pub token_id: String,
+    pub proof: String,
 }
 
-type DagLink {
-  path: String!
-  cid: String!
+#[graphql_object(context = Context)]
+impl MetadataPacket {
+    fn cid(&self) -> &str {
+        &self.cid
+    }
+
+    fn from_owner(&self) -> &str {
+        &self.from_owner
+    }
+
+    fn result_cid(&self) -> &str {
+        &self.result_cid
+    }
+    fn to_owner(&self) -> &str {
+        &self.to_owner
+    }
+
+    fn to_address(&self) -> &str {
+        &self.to_address
+    }
+
+    fn token_id(&self) -> &str {
+        &self.token_id
+    }
+    fn proof(&self) -> &str {
+        &self.proof
+    }
 }
 
-type DagContractTrusted {
-  data: DagLink!
-  payload: Ancon721Metadata!
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Ancon721Metadata {
+    pub name: String,
+    pub description: String,
+    pub image: String,
+    pub parent: String,
+    pub owner: String,
+    pub sources: Vec<String>,
 }
 
-type Query {
-  metadata(cid: String!, path: String!): Ancon721Metadata
+#[graphql_object(context = Context)]
+impl Ancon721Metadata {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn description(&self) -> &str {
+        &self.description
+    }
+
+    fn image(&self) -> &str {
+        &self.image
+    }
+    fn parent(&self) -> &str {
+        &self.parent
+    }
+
+    fn owner(&self) -> &str {
+        &self.owner
+    }
+
+    async fn sources(&self) -> &Vec<String> {
+        &self.sources
+    }
 }
 
-input MetadataTransactionPacketInput {
-  path: String!
-  cid: String!
-  owner: String!
-  newOwner: String!
+#[derive(Clone, Copy, Debug)]
+pub struct Query;
+
+#[graphql_object(context = Context)]
+impl Query {
+    fn api_version() -> &'static str {
+        "0.1"
+    }
+
+    pub fn metadata(context: &Context, cid: String, path: String) -> Ancon721Metadata {
+        let v = read_dag(&cid);
+        let res = serde_json::from_slice(&v);
+        res.unwrap()
+    }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct Mutation;
 
+#[graphql_object(context = Context)]
+impl Mutation {
+    //Dagblock mutation
+    fn transfer(context: &Context, input: MetadataTransactionInput) -> Vec<MetadataPacket> {
+        let v = read_dag(&input.cid);
+        let res = serde_json::from_slice(&v);
+        let metadata: Ancon721Metadata = res.unwrap();
 
-type Transaction {
-  metadata(tx: MetadataTransactionPacketInput!): DagLink!
+        //generate current metadata proof packet
+        let proof = generate_proof(&input.cid);
+
+        let updated_cid =
+            focused_transform_patch_str(&input.cid, "owner", &metadata.owner, &input.new_owner);
+        let updated =
+            focused_transform_patch_str(&updated_cid, "parent", &metadata.parent, &input.cid);
+
+        //generate updated metadata proof packet
+        let proof_cid = apply_request_with_proof(input.clone(), &proof, &updated);
+        let v = read_dag(&proof_cid);
+        let res = serde_json::from_slice(&v);
+        let packet: MetadataPacket = res.unwrap();
+        let current_packet = MetadataPacket {
+            cid: input.cid,
+            from_owner: input.owner,
+            result_cid: updated,
+            to_address: "".to_string(),
+            to_owner: input.new_owner,
+            token_id: "".to_string(),
+            proof: proof,
+        };
+        let result = vec![current_packet, packet];
+        result
+    }
 }
 
+#[derive(Clone, Debug, GraphQLInputObject, Serialize, Deserialize)]
+struct MetadataTransactionInput {
+    path: String,
+    cid: String,
+    owner: String,
+    new_owner: String,
+}
+
+type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Context>>;
+
+pub fn schema() -> Schema {
+    Schema::new(Query, Mutation, EmptySubscription::<Context>::new())
+}
+
+fn apply_request_with_proof(
+    input: MetadataTransactionInput,
+    prev_proof: &str,
+    new_cid: &str,
+) -> String {
+    // Must combined proofs (prev and new) in host function
+    // then send to chain and return result
+    let js = json!({
+        "previous": prev_proof,
+        "next_cid": new_cid,
+        "input": input
+    });
+    submit_proof(&js.to_string())
+}
 ```
-
-Then run `generateServeModels.sh` from repo directory. It will generate and models inside codegen.
 
 
 ## DAG Operations or Mutation
@@ -106,375 +230,82 @@ In this example, we'll use one of the easiest IPLD Operator, which is the `focus
 - Pinpoint or **select** a path inside a root node
 - Patch or mutate that selection with a function call. In our case, a diff patch, eg if previous node matches previous node requested a change, then apply requested change to node.
 
-It returns a new CID and we can iterate again with another change request.
+In Ancon Protocol Contracts SDK, you can use focused transform with `focused_transform_patch_str`
 
+```rust
+#[derive(Clone, Copy, Debug)]
+pub struct Mutation;
 
-```go
-package graph
+#[graphql_object(context = Context)]
+impl Mutation {
+    //Dagblock mutation
+    fn transfer(context: &Context, input: MetadataTransactionInput) -> Vec<MetadataPacket> {
+        let v = read_dag(&input.cid);
+        let res = serde_json::from_slice(&v);
+        let metadata: Ancon721Metadata = res.unwrap();
 
-// This file will be automatically regenerated based on the schema, any resolver implementations
-// will be copied through when generating and any unknown code will be moved to the end.
+        //generate current metadata proof packet
+        let proof = generate_proof(&input.cid);
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
+        let updated_cid =
+            focused_transform_patch_str(&input.cid, "owner", &metadata.owner, &input.new_owner);
+        let updated =
+            focused_transform_patch_str(&updated_cid, "parent", &metadata.parent, &input.cid);
 
-	"github.com/anconprotocol/node/x/anconsync"
-	"github.com/anconprotocol/node/x/anconsync/codegen/graph/generated"
-	"github.com/anconprotocol/node/x/anconsync/codegen/graph/model"
-	"github.com/anconprotocol/node/x/anconsync/handler"
-	ipld "github.com/ipld/go-ipld-prime"
-	"github.com/ipld/go-ipld-prime/datamodel"
-	"github.com/ipld/go-ipld-prime/must"
-	"github.com/ipld/go-ipld-prime/node/basicnode"
-	"github.com/ipld/go-ipld-prime/traversal"
-)
-
-func (r *queryResolver) Metadata(ctx context.Context, cid string, path string) (*model.Ancon721Metadata, error) {
-	dag := ctx.Value("dag").(*handler.AnconSyncContext)
-
-	jsonmodel, err := anconsync.ReadFromStore(dag.Store, cid, path)
-	if err != nil {
-		return nil, err
-	}
-	var metadata model.Ancon721Metadata
-	json.Unmarshal([]byte(jsonmodel), &metadata)
-	return &metadata, nil
+        //generate updated metadata proof packet
+        let proof_cid = apply_request_with_proof(input.clone(), &proof, &updated);
+        let v = read_dag(&proof_cid);
+        let res = serde_json::from_slice(&v);
+        let packet: MetadataPacket = res.unwrap();
+        let current_packet = MetadataPacket {
+            cid: input.cid,
+            from_owner: input.owner,
+            result_cid: updated,
+            to_address: "".to_string(),
+            to_owner: input.new_owner,
+            token_id: "".to_string(),
+            proof: proof,
+        };
+        let result = vec![current_packet, packet];
+        result
+    }
 }
 
-func (r *transactionResolver) Metadata(ctx context.Context, tx model.MetadataTransactionInput) (*model.DagLink, error) {
-	dag := ctx.Value("dag").(*handler.AnconSyncContext)
-
-	lnk, err := anconsync.ParseCidLink(tx.Cid)
-	if err != nil {
-		return nil, err
-	}
-	rootNode, err := dag.Store.Load(ipld.LinkContext{}, lnk)
-	if err != nil {
-		return nil, err
-	}
-
-	// owner update
-	n, err := traversal.FocusedTransform(
-		rootNode,
-		datamodel.ParsePath("owner"),
-		func(progress traversal.Progress, prev datamodel.Node) (datamodel.Node, error) {
-			if progress.Path.String() == "owner" && must.String(prev) == tx.Owner {
-				nb := prev.Prototype().NewBuilder()
-				nb.AssignString(tx.NewOwner)
-				return nb.Build(), nil
-			}
-			return nil, fmt.Errorf("Owner not found")
-		}, false)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// parent update
-	n, err = traversal.FocusedTransform(
-		n,
-		datamodel.ParsePath("parent"),
-		func(progress traversal.Progress, prev datamodel.Node) (datamodel.Node, error) {
-			nb := basicnode.Prototype.Any.NewBuilder()
-			// set previous hash, not current
-			l, _ := anconsync.ParseCidLink(tx.Cid)
-			nb.AssignLink(l)
-			return nb.Build(), nil
-		}, false)
-
-	if err != nil {
-		return nil, fmt.Errorf("Focused transform error")
-	}
-
-	link := dag.Store.Store(ipld.LinkContext{}, n)
-
-	return &model.DagLink{
-		Path: "/",
-		Cid:  link.String(),
-	}, nil
+#[derive(Clone, Debug, GraphQLInputObject, Serialize, Deserialize)]
+struct MetadataTransactionInput {
+    path: String,
+    cid: String,
+    owner: String,
+    new_owner: String,
 }
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
-
-// Transaction returns generated.TransactionResolver implementation.
-func (r *Resolver) Transaction() generated.TransactionResolver { return &transactionResolver{r} }
-
-type queryResolver struct{ *Resolver }
-type transactionResolver struct{ *Resolver }
 
 ```
 
-In `schema.resolvers.go` the generator creates code stubs, where you put the DAG operations implementation.
+The result must always be the previous and next packets.
 
-## Smart Contract
+## Smart Contract APIs
 
-Next task is to implement an EIP-3668 Durin contract. It works similar to challenge and response scheme, where Alice requests some data or packet to be anchored offchain (in the metadata example, the updated metadata uri and owner).
+### pub fn focused_transform_patch_str(cid: &str, path: &str, prev: &str, next: &str) -> String
 
-```solidity
+Applies an IPLD focused transform using a patch design pattern for string node values
 
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+### pub fn read_dag(cid: &str) -> Vec<u8>
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "./ancon/TrustedOffchainHelper.sol";
+Reads a cid from dag store
 
-//  a NFT secure document
-contract XDVNFT is
-    ERC721Burnable,
-    ERC721Pausable,
-    ERC721URIStorage,
-    Ownable,
-    IERC721Receiver,
-    TrustedOffchainHelper
-{
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-    IERC20 public stablecoin;
-    address public dagContractOperator;
-    uint256 public serviceFeeForPaymentAddress = 0;
-    uint256 public serviceFeeForContract = 0;
+### pub fn submit_proof(data: &str) -> String
 
-    event Withdrawn(address indexed paymentAddress, uint256 amount);
+Submits proof (offchain)
 
-    event ServiceFeePaid(
-        address indexed from,
-        uint256 paidToContract,
-        uint256 paidToPaymentAddress
-    );
+### pub fn get_proof(cid: &str) -> String
 
-    /**
-     * XDVNFT Data Token
-     */
-    constructor(
-        string memory name,
-        string memory symbol,
-        address tokenERC20
-    ) ERC721(name, symbol) {
-        stablecoin = IERC20(tokenERC20);
-    }
+Retrieves proof (offchain)
 
-    function setServiceFeeForPaymentAddress(uint256 _fee) public onlyOwner {
-        serviceFeeForPaymentAddress = _fee;
-    }
+### pub fn generate_proof(cid: &str) -> String
 
-    function setServiceFeeForContract(uint256 _fee) public onlyOwner {
-        serviceFeeForContract = _fee;
-    }
+Generates proof (offchain)
 
-    /**
-     * @dev Requests a DAG contract offchain execution
-     */
-    function transferURI(address toAddress, uint256 tokenId)
-        external
-        returns (bytes32)
-    {
-        revert OffchainLookup(
-            url,
-            abi.encodeWithSignature(
-                "transferURIWithProof(address toAddress, uint256 tokenId, bytes memory proof)",
-                toAddress,
-                tokenId
-            )
-        );
-    }
-
-    /**
-     * @dev Transfer a XDV Data Token URI with proof
-     */
-    function transferURIWithProof(
-        string memory toAddress,
-        string memory tokenId,
-        bytes memory proof
-    ) public returns (uint256) {
-        bool proofRef = _requestWithProof(toAddress, tokenId, proof);
-                                    
-        require(proofRef, "Invalid proof");
-        (
-            bytes memory metadataCid,
-            bytes memory fromOwner,
-            bytes memory resultCid,
-            bytes memory toOwner,
-            ,
-            ,
-            bytes memory prefix,
-            bytes memory signature
-        ) = abi.decode(
-                proof,
-                (bytes, bytes, bytes, bytes, bytes, bytes, bytes, bytes)
-            );
-        uint256 newItemId = _tokenIds.current();
-        _setTokenURI(newItemId, string(metadataCid));
-        //       _transfer()
-        //send the method name
-        //make set token uri work
-        return newItemId;
-    }
-
-    /**
-     * @dev Requests a DAG contract offchain execution with proof
-     */
-    function _requestWithProof(
-        string memory toAddress,
-        string memory tokenId,
-        bytes memory proof
-    ) internal returns (bool) {
-        (
-            bytes memory metadataCid,
-            bytes memory fromOwner,
-            bytes memory resultCid,
-            bytes memory toOwner,
-            ,
-            ,
-            bytes memory prefix,
-            bytes memory signature
-        ) = abi.decode(
-                proof,
-                (bytes, bytes, bytes, bytes, bytes, bytes, bytes, bytes)
-            );
-
-        if (executed[bytes32(signature)]) {
-            revert("metadata dag transfer:  invalid proof");
-        } else {
-            bytes32 digest = keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    keccak256(
-                        abi.encodePacked(
-                            metadataCid,
-                            fromOwner,
-                            resultCid,
-                            toOwner,
-                            toAddress,
-                            tokenId,
-                            prefix
-                        )
-                    )
-                )
-            );
-
-            require(
-                isValidProof(digest, signature),
-                "Signer is not the signer of the token"
-            );
-            {
-                executed[bytes32(signature)] = true;
-                emit ProofAccepted(msg.sender, bytes32(signature));
-            }
-            return (true);
-        }
-    }
-
-    /**
-     * @dev Mints a XDV Data Token
-     */
-    function mint(address user, string memory uri) public returns (uint256) {
-        _tokenIds.increment();
-
-        uint256 newItemId = _tokenIds.current();
-        _safeMint(user, newItemId);
-        _setTokenURI(newItemId, uri);
-
-        return newItemId;
-    }
-
-    /**
-     * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
-     * by `operator` from `from`, this function is called.
-     *
-     * It must return its Solidity selector to confirm the token transfer.
-     * If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
-     *
-     * The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
-     */
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
-
-    /**
-     * @dev Just overrides the superclass' function. Fixes inheritance
-     * source: https://forum.openzeppelin.com/t/how-do-inherit-from-erc721-erc721enumerable-and-erc721uristorage-in-v4-of-openzeppelin-contracts/6656/4
-     */
-    function _burn(uint256 tokenId)
-        internal
-        override(ERC721, ERC721URIStorage)
-    {
-        super._burn(tokenId);
-    }
-
-    /**
-     * @dev Just overrides the superclass' function. Fixes inheritance
-     * source: https://forum.openzeppelin.com/t/how-do-inherit-from-erc721-erc721enumerable-and-erc721uristorage-in-v4-of-openzeppelin-contracts/6656/4
-     */
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override(ERC721, ERC721Pausable) {
-        require(!paused(), "XDV: Token execution is paused");
-
-        if (from == address(0)) {
-            paymentBeforeMint(msg.sender);
-        }
-
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    /**
-     * @dev tries to execute the payment when the token is minted.
-     * Reverts if the payment procedure could not be completed.
-     */
-    function paymentBeforeMint(address tokenHolder) internal virtual {
-        // Transfer tokens to pay service fee
-        require(
-            stablecoin.transferFrom(
-                tokenHolder,
-                address(this),
-                serviceFeeForContract
-            ),
-            "XDV: Transfer failed for recipient"
-        );
-
-        emit ServiceFeePaid(
-            tokenHolder,
-            serviceFeeForContract,
-            serviceFeeForPaymentAddress
-        );
-    }
-
-    function withdrawBalance(address payable payee) public onlyOwner {
-        uint256 balance = stablecoin.balanceOf(address(this));
-
-        require(stablecoin.transfer(payee, balance), "XDV: Transfer failed");
-
-        emit Withdrawn(payee, balance);
-    }
-}
-
-```
 
 ## Onchain adapter
 

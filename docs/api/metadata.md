@@ -41,9 +41,96 @@ To use DID identifier with onchain metadata:
 4. Verifiable DID with KYC (only Panama) has a KYC cost to verify ID.
 
 
-## Examples
+## AnconProtocol.sol
 
-### Solidity
+```typescript
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+import "../ics23/ics23.sol";
+
+contract AnconProtocol is ICS23 {
+    address public owner;
+    bytes public relayNetworkHash;
+
+    mapping(bytes => bytes) public accountProofs;
+    mapping(address => bytes) public accountByAddrProofs;
+    mapping(bytes => bool) public proofs;
+
+    event ProofPacketSubmitted(bytes key, bytes packet);
+    event EnrollL2Account(bool enrolledStatus, bytes key, bytes value);
+
+    constructor(address _onlyOwner) public {
+        owner = _onlyOwner;
+    }
+
+
+    // Register L2 Account
+    function enrollL2Account(
+        bytes memory key, // proof key "/anconprotocol/root/user/diddocid"
+        bytes memory did, // proof value did doc id
+        ExistenceProof memory proof
+    ) public payable returns (bool) {
+        require(verifyProof(proof));
+        accountProofs[(did)] = key;
+        accountByAddrProofs[msg.sender] = key;
+        emit EnrollL2Account(true, key, did);
+        return true;
+    }
+
+
+
+    // Updates latest hash from a node or subgraph, only owner using updater service
+    function updateProtocolHeader(bytes memory rootHash) public returns (bool) {
+        require(msg.sender == owner);
+        relayNetworkHash = rootHash;
+        return true;
+    }
+
+    // Submits packet with proof and emits event
+    function submitPacketWithProof(
+        bytes memory key,
+        bytes memory packet,
+        ExistenceProof memory proof
+    ) public payable returns (bool) {
+        // 1. Verify
+        require(verifyProof(proof));
+
+        proofs[key] = true;
+
+        // 2. Submit event
+        emit ProofPacketSubmitted(key, packet);
+
+        return true;
+    }
+
+    // Verifies vector commitment existence in remote merkle tree, given a last updated hash submitted by trusted party.
+    function verifyProof(ExistenceProof memory exProof)
+        public
+        view
+        returns (bool)
+    {
+        // Verify membership
+        verify(
+            exProof,
+            getIavlSpec(),
+            relayNetworkHash,
+            exProof.key,
+            exProof.value
+        );
+
+        return true;
+    }
+
+    // Calculates a root hash from an existence proof
+    function queryRootCalculation(ExistenceProof memory proof)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return bytes(calculate(proof));
+    }
+}
+```
 
 
 ## Metadata JSON Schema

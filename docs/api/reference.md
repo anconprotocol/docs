@@ -27,6 +27,9 @@ example of the returned object:
 {
   "cid": {
     "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
+  },
+  "proof": {
+    "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
   }
 }
 ```
@@ -117,6 +120,17 @@ example of the returned object:
 
 ```
 
+## `GET /proofs/lasthash`
+
+> Reads current last hash
+
+
+### Returns
+
+| Type | Description |
+| -------- | -------- |
+| `Promise<Response>` | An object that contains the hash |
+
 
 ## `GET /user/:did/did.json`
 
@@ -170,7 +184,7 @@ example of the returned object:
 
 ## `POST /v0/dagjson`
 
-> Stores json as dag-json
+> Stores json as dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID.
 
 
 ### Parameters
@@ -205,8 +219,7 @@ example of the returned object:
 
 ## `POST /v0/dagcbor`
 
-> Stores json as dag-cbor
-
+> Stores json as dag-cbor in users path. Must have registerd DID and messasge must be signed with signature matching DID.
 
 ### Parameters
 
@@ -327,10 +340,140 @@ example of the returned object:
 ```
 
 
+
+
+## `POST /v0/code`
+
+> Uploads a hybrid smart contract
+
+
+### Parameters
+
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `code` | `string` | hex encoded Ancon Protocol Rust Smart Contract |
+| `from` | `string` | DID |
+| `signature` | `string` | hex encoded signature of code digest |
+
+
+
+### Returns
+
+| Type | Description |
+| -------- | -------- |
+| `Promise<Response>` |  content type stream|
+
+example of the returned object:
+
+```
+<...data...>
+```
+
+
 ## `POST /rpc`
 
 > Trusted offchain JSON-RPC 2.0 gateway
 
+
+## `ancon_call`
+
+> Executes hybrid smart contract
+
+
+
+### Parameters
+
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `to` | `string` | smart contract cid address |
+| `from` | `string` | DID |
+| `signature` | `string` | signature |
+| `data` | `string` | data |
+
+
+
+### Returns
+
+| Type | Description |
+| -------- | -------- |
+| `Promise<Response>` |  content type stream|
+
+
+### Example
+
+```typescript
+import dotenv from 'dotenv'
+import { arrayify, hexlify } from '@ethersproject/bytes'
+import fs from 'fs'
+import { promisify } from 'util'
+import { ethers } from 'ethers'
+import web3 from 'web3'
+import { Secp256k1 } from '@cosmjs/crypto'
+import { fetchJson } from '@ethersproject/web'
+import { toUtf8Bytes, toUtf8String } from 'ethers/lib/utils'
+dotenv.config()
+
+export class ExecuteContractExample {
+  constructor(
+    private privateKey: string,
+    private apiUrl: string = 'http://localhost:7788',
+  ) {}
+
+  async execute({ to, from, query }: any): Promise<any> {
+    let data = {
+      to,
+      from,
+      data: query,
+      // signature: '',
+    } as any
+    const bz = ethers.utils.toUtf8Bytes(data.to + data.from + data.data)
+    const hash = ethers.utils.keccak256(bz)
+    const sig = await Secp256k1.createSignature(
+      arrayify(hash),
+      Buffer.from(this.privateKey, 'hex'),
+    )
+    data.signature = hexlify(sig.toFixedLength())
+
+    const body = {
+      jsonrpc: '2.0',
+      method: 'ancon_call',
+      params: [data.to, data.from, data.signature, data.data],
+      id: 1,
+    }
+    
+    const result = await fetchJson(
+      {
+        url: `${this.apiUrl}/rpc`,
+      },
+      JSON.stringify(body),
+    )
+
+    return result
+  }
+}
+
+;(async () => {
+  const contract = new ExecuteContractExample(
+    process.env.PRIVATE_KEY || '',
+    process.env.URL,
+  )
+
+  //@ts-ignore
+  let metadata = 'baguqeerak5hfvtgsvaaxtm5cbce2khnh7y4ijfnbrgeygwu4wixrz4z52vja'
+  const result = await contract.execute({
+    to: process.env.CONTRACT,
+    from: process.env.DID_USER,
+    query: `query   { metadata(cid: \"${metadata}\", path: \"/\"){name} }`
+  })
+
+  console.log(result)
+  const j = (web3.utils.hexToString(result.result))
+  console.log(JSON.parse(j))
+  
+})()
+```
 
 ## `GET /swagger`
 
@@ -339,7 +482,15 @@ example of the returned object:
 
 # CLI Reference
 
-- `peeraddr`: Connects to subgraph node with Graphsync
+- `peeraddr`: Connects to subgraph node with IPFS
 - `addr`:  Host libp2p address
 - `apiaddr`:  Host API address
 - `data`: Storage directory
+- `cors`: Set to true to enable CORS requests
+- `origins`: Comma separated list of addresses
+- `init`: Initializes the proof storage by creating a genesis block
+- `keys`: Generates Secp256k1 keys
+- `hostname`: Node identifier
+- `rootkey`: Rootkey to validate
+- `sync`: Syncs with peers
+- `peers`:  List of peers to sync
