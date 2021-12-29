@@ -32,9 +32,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 - [Verifiable DAG Store](/docs/api/metadata)
 - [Cross chain messaging](/docs/api/durin)
-<!-- - [Developing Hybrid Smart Contracts with GraphQL](/docs/api/ipld)
-- [Working with subgraphs using Graphsync protocol](/docs/api/graphsync)
- -->
+
 ## Tutorials
 
 - [EVM to EVM cross ownership metadata transfer](/docs/tutorials/crossownership)
