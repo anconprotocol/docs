@@ -18,6 +18,14 @@ Ancon protocol is a new kind of SDK and technology that can be used to implement
 
 Node manages offchain data integrations and trusted offchain gateways.  It has DID web and DID key, Graphsync, and dag-json / dag-cbor technology support.
 
+## Testnet contracts - AnconProtocol.sol
+
+- `Ropsten`: 0x067f04932a4808124541521e940fd2d21a44feeb
+- `BSC Testnet`: 0x3AD9090a3E3af4e288805d8c020F4CCd20212036
+
+## DAG Store Root Key - Ancon Protocol Node
+
+- bafyreibqiqbcafnzmjqmv3iy7uzjiimneiq2cqsp3bmhtcjbrwyqwvywbi
 
 
 ## Source code
