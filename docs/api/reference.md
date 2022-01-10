@@ -198,9 +198,8 @@ example of the returned object:
 | `signature` | `string` | signature as hex |
 | `data` | `object` | object to store |
 | `pin` | `bool` | ipfs pin |
-
-
-
+| `encrypt` | `bool` | enables JOSE Web Encryption |
+| `authorizedRecipients` | `string array` | comma delimited Ethereum address
 
 ### Returns
 
