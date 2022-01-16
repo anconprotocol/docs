@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Ancon Protocol 
 
-### Hybrid Smart Contracts protocol for secure offchain data economy
+### Protocol for secure offchain data economy
 
 Ancon protocol is a new kind of SDK and technology that can be used to implement secure offchain data integrations using best of breed offchain protocols like ipfs and any blockchain with smart contracts support.
 
@@ -18,14 +18,26 @@ Ancon protocol is a new kind of SDK and technology that can be used to implement
 
 Node manages offchain data integrations and trusted offchain gateways.  It has DID web and DID key, Graphsync, and dag-json / dag-cbor technology support.
 
-## Testnet contracts - AnconProtocol.sol
+## Testnet Protocol Contract - AnconProtocol.sol
 
-- `Ropsten`: 0x067f04932a4808124541521e940fd2d21a44feeb
-- `BSC Testnet`: 0x3AD9090a3E3af4e288805d8c020F4CCd20212036
+- `Kovan`: 0xD5BA6f5eCfc80F13784446511B2be73f9d5e2707
+- `BSC Testnet`: 0xDB37c3D3316455d16D7788d47805e1458c8cdbBa
 
-## DAG Store Root Key - Ancon Protocol Node
+## Testnet NFT Contract - XDVNFT.sol
 
-- bafyreibqiqbcafnzmjqmv3iy7uzjiimneiq2cqsp3bmhtcjbrwyqwvywbi
+- `Kovan`: 0x8baD1Aa5F15f41A595cD449867fb8406EA158130
+- `BSC Testnet`: 0x7aA3DF5fadd20599eE351493a177C228f9fb0785
+
+## Testnet DAG Store Root Key - Ancon Protocol Node
+
+- `bafyreibqiqbcafnzmjqmv3iy7uzjiimneiq2cqsp3bmhtcjbrwyqwvywbi`
+
+## Testnet - Mint, Enroll Account and DID Panama PoC
+
+- `DApp`: `https://mint.ancon.did.pa`
+- `DAI Token BSC Testnet`: 0xec5dcb5dbf4b114c9d0f65bccab49ec54f6a0867
+- `DAI Token Kovan`: 0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa
+
 
 
 ## Source code
