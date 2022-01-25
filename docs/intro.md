@@ -20,17 +20,18 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 ## Testnet Protocol Contract - AnconProtocol.sol
 
-- `Kovan`: 0xD5BA6f5eCfc80F13784446511B2be73f9d5e2707
-- `BSC Testnet`: 0xDB37c3D3316455d16D7788d47805e1458c8cdbBa
+- `Polygon Mumbai`: 0x7667690cc4f7fBbe1eF2fef6510F4fA56E3D2184
+- `BSC Testnet`: 0xc3425dbd6dbb444BB9eBc4472a0915CD3F2C2D49
 
 ## Testnet NFT Contract - XDVNFT.sol
 
-- `Kovan`: 0x8baD1Aa5F15f41A595cD449867fb8406EA158130
-- `BSC Testnet`: 0x7aA3DF5fadd20599eE351493a177C228f9fb0785
+- `Kovan`: 0xB3A28DF157c78611abaAeC74D8eCcf7613c08814
+- `BSC Testnet`: 0x9Dcc56b169129804B3d81aFa55cD25Fecb23B30e
 
-## Testnet DAG Store Root Key - Ancon Protocol Node
+## Testnet DAG Network - Ancon Protocol Node
 
-- `bafyreibqiqbcafnzmjqmv3iy7uzjiimneiq2cqsp3bmhtcjbrwyqwvywbi`
+- `Address:` 0x28CB56Ef6C64B066E3FfD5a04E0214535732e57F
+- `Moniker`: anconprotocol
 
 ## Testnet - Mint, Enroll Account and DID Panama PoC
 
@@ -55,6 +56,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 ## Tutorials
 
+- Relayers, Networks and Nodes
 - [EVM to EVM cross ownership metadata transfer](/docs/tutorials/crossownership)
 - [EVM to Flow cross ownership metadata transfer](/docs/tutorials/crossownership-flow)
 
