@@ -25,7 +25,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 ## Testnet NFT Contract - XDVNFT.sol
 
-- `Kovan`: 0xB3A28DF157c78611abaAeC74D8eCcf7613c08814
+- `Polygon Mumbai`: 0xB3A28DF157c78611abaAeC74D8eCcf7613c08814
 - `BSC Testnet`: 0x9Dcc56b169129804B3d81aFa55cD25Fecb23B30e
 
 ## Testnet DAG Network - Ancon Protocol Node
