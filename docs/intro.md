@@ -56,7 +56,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 ## Tutorials
 
-- Relayers, Networks and Nodes
+- [Relayers, Networks and Nodes](/docs/tutorials/networks)
 - [EVM to EVM cross ownership metadata transfer](/docs/tutorials/crossownership)
 - [EVM to Flow cross ownership metadata transfer](/docs/tutorials/crossownership-flow)
 

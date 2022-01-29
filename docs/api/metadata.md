@@ -10,35 +10,6 @@ Because there is no consensus involved, we can only be sure that it was signed b
 
 Once is submitted to a onchain solution, any offchain operation can be properly validated onchain for any proofs.
 
-## Staking and Validators
-
-Ancon Protocol will implement a smart contract based validator approach, where the incentives will be to batch proofs operations, validate them, and then submit or commit to protocol header updates. Using $ANCON token, validators will be able to stake and obtain a income by supporting the protocol.
-
-## Onchain metadata
-
-To use DID identifier with onchain metadata:
-
-### Smart contracts
-
-1. Install or place `AnconProtocol.sol`
-2. The NFT Dapp or App will use these calls: `verifyProof`, `submitPacketWithProof`, `enrollL2Account` and `updateProtocolHeader`.
-3. Before starting, create a DID account and obtain the CID and username of the DID.
-4. Execute a hybrid smart contract and send the result as input for the next call.
-5. Prepare a Packet, which is the cross chain message, fill the packet message with the values returned from node API.
-6. Use your recently activated DID identifier to sign the message , and send it to  `submitPacketWithProof` for transaction.
-7. Once proof is submitted to L1, your packet is validated and anchored.
-
-### Client
-
-1. Use Node API to registerd DIDs.
-2. Following API requires DID authentication:
-- Any write DAG operation (JSON or CBOR)
-- Any hybrid smart contract transaction
-3. Following onchain operations requires gas and protocol fees:
-- `enrollL2Acccount`
-- `submitPacketWithProof`
-- `updateProtocolHeader`
-4. Verifiable DID with KYC (only Panama) has a KYC cost to verify ID.
 
 
 ## AnconProtocol.sol
@@ -50,10 +21,16 @@ import "../ics23/ics23.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract AnconProtocol is ICS23 {
-    bytes32 public ENROLL_PAYMENT = keccak256("ENROLL_PAYMENT");
-    bytes32 public ENROLL_DAG = keccak256("ENROLL_DAG");
-    bytes32 public SUBMIT_PAYMENT = keccak256("SUBMIT_PAYMENT");
-    // mapping(bytes32 => uint256) public p
+    struct SubscriptionTier {
+        address token;
+        uint256 amount;
+        uint256 amountStaked;
+        uint256 includedBlocks;
+        bytes32 id;
+        uint256 incentiveBlocksMonthly;
+        uint256 incentivePercentageMonthly;
+        uint256 includedBlocksStarted;
+    }
     address public owner;
     address public relayer;
 
@@ -68,18 +45,45 @@ contract AnconProtocol is ICS23 {
     mapping(bytes => bool) public proofs; //if proof key was submitted to the blockchain
 
     mapping(bytes32 => address) public whitelistedDagGraph;
+    mapping(bytes32 => SubscriptionTier) public tiers;
+    mapping(address => SubscriptionTier) public dagGraphSubscriptions;
+    mapping(address => uint256) public totalHeaderUpdatesByDagGraph;
+    mapping(address => mapping(address => uint256))
+        public totalSubmittedByDagGraphUser;
+
     uint256 public seq;
     mapping(address => uint256) public nonce;
     mapping(bytes32 => bytes) public latestRootHashTable;
     mapping(bytes32 => mapping(uint256 => bytes)) public relayerHashTable;
+    uint256 public INCLUDED_BLOCKS_EPOCH = 200000; // 200 000 chain blocks
 
     event Withdrawn(address indexed paymentAddress, uint256 amount);
 
-    event ServiceFeePaid(address indexed from, uint256 fee);
+    event ServiceFeePaid(
+        address indexed from,
+        bytes32 indexed tier,
+        bytes32 indexed moniker,
+        address token,
+        uint256 fee
+    );
 
     event HeaderUpdated(bytes32 indexed moniker);
 
-    event ProofPacketSubmitted(bytes key, bytes packet, bytes32 moniker);
+    event ProofPacketSubmitted(
+        bytes indexed key,
+        bytes packet,
+        bytes32 moniker
+    );
+
+    event TierAdded(bytes32 indexed id);
+
+    event TierUpdated(
+        bytes32 indexed id,
+        address token,
+        uint256 fee,
+        uint256 staked,
+        uint256 includedBlocks
+    );
 
     event AccountRegistered(
         bool enrolledStatus,
@@ -88,18 +92,37 @@ contract AnconProtocol is ICS23 {
         bytes32 moniker
     );
 
-    constructor(address tokenAddress, uint256 network) public {
+    constructor(
+        address tokenAddress,
+        uint256 network,
+        uint256 starterFee,
+        uint256 startupFee
+    ) public {
         owner = msg.sender;
         stablecoin = IERC20(tokenAddress);
         chainId = network;
+
+        // add tiers
+        addTier(keccak256("starter"), tokenAddress, starterFee, 0, 100);
+        addTier(keccak256("startup"), tokenAddress, startupFee, 0, 500);
+        addTier(keccak256("pro"), tokenAddress, 0, 0, 1000);
+        setTierSettings(
+            keccak256("pro"),
+            tokenAddress,
+            500000000,
+            1000 ether,
+            1000
+        );
+        addTier(keccak256("defi"), tokenAddress, 0, 0, 10000);
+        addTier(keccak256("luxury"), tokenAddress, 0, 0, 100000);
     }
 
-    // getContractIdentifier is used to identify an offchain proof in any chain
+    // getContractIdentifier is used to identify a contract protocol deployed in a specific chain
     function getContractIdentifier() public view returns (bytes32) {
         return keccak256(abi.encodePacked(chainId, address(this)));
     }
 
-    // getContractIdentifier is used to identify an offchain proof in any chain
+    // verifyContractIdentifier verifies a nonce is from  a specific chain
     function verifyContractIdentifier(
         uint256 usernonce,
         address sender,
@@ -109,20 +132,22 @@ contract AnconProtocol is ICS23 {
             keccak256(abi.encodePacked(chainId, address(this))) == hash &&
             nonce[sender] == usernonce;
     }
-    
+
     function getNonce() public view returns (uint256) {
         return nonce[msg.sender];
     }
 
-    // setWhitelistedDagGraph registers offchain graphs by protocol admin
-    function setWhitelistedDagGraph(bytes32 moniker, address dagAddress)
-        public
-        payable
-    {
-        require(whitelistedDagGraph[moniker] == address(0), "exists");
-        protocolPayment(ENROLL_DAG, msg.sender);
+    // registerDagGraphTier
+    function registerDagGraphTier(
+        bytes32 moniker,
+        address dagAddress,
+        bytes32 tier
+    ) public payable {
+        require(whitelistedDagGraph[moniker] == address(0), "moniker exists");
+        require(tier == tiers[tier].id, "missing tier");
 
         whitelistedDagGraph[moniker] = dagAddress;
+        dagGraphSubscriptions[dagAddress] = tiers[tier];
     }
 
     // updateRelayerHeader updates offchain dag graphs signed by dag graph key pair
@@ -130,14 +155,36 @@ contract AnconProtocol is ICS23 {
         bytes32 moniker,
         bytes memory rootHash,
         uint256 height
-    ) public {
+    ) public payable {
         require(msg.sender == whitelistedDagGraph[moniker], "invalid user");
 
-        // TODO:  Check to  see if  signer has n amount of token staked
+        SubscriptionTier memory t = dagGraphSubscriptions[msg.sender];
+        IERC20 token = IERC20(tiers[t.id].token);
+        require(token.balanceOf(address(msg.sender)) > 0, "no enough balance");
+
+        if (t.includedBlocks > 0) {
+            t.includedBlocks = t.includedBlocks - 1;
+        } else {
+            // tier has no more free blocks for this epoch, charge protocol fee
+            require(
+                token.transferFrom(msg.sender, address(this), tiers[t.id].amount),
+                "transfer failed for recipient"
+            );
+        }
+        // reset tier includede blocks every elapsed epoch
+        uint256 elapsed = block.number - t.includedBlocksStarted;
+        if (elapsed > INCLUDED_BLOCKS_EPOCH) {
+            // must always read from latest tier settings
+            t.includedBlocks = tiers[t.id].includedBlocks;
+            t.includedBlocksStarted = block.number;
+        }
+        // set hash
         relayerHashTable[moniker][height] = rootHash;
         latestRootHashTable[moniker] = rootHash;
+        emit ServiceFeePaid(msg.sender, moniker, t.id, tiers[t.id].token, tiers[t.id].amount);
 
         seq = seq + 1;
+        totalHeaderUpdatesByDagGraph[msg.sender] = totalHeaderUpdatesByDagGraph[msg.sender] + 1;
         emit HeaderUpdated(moniker);
     }
 
@@ -145,7 +192,55 @@ contract AnconProtocol is ICS23 {
     function setPaymentToken(address tokenAddress) public {
         require(owner == msg.sender);
         stablecoin = IERC20(tokenAddress);
-}
+    }
+
+    // addTier
+    function addTier(
+        bytes32 id,
+        address tokenAddress,
+        uint256 amount,
+        uint256 amountStaked,
+        uint256 includedBlocks
+    ) public {
+        require(owner == msg.sender, "invalid owner");
+        require(tiers[id].id != id, "tier already in use");
+        tiers[id] = SubscriptionTier({
+            token: tokenAddress,
+            amount: amount,
+            amountStaked: amountStaked,
+            includedBlocks: includedBlocks,
+            id: id,
+            incentiveBlocksMonthly: 0,
+            incentivePercentageMonthly: 0,
+            includedBlocksStarted: block.number
+        });
+        emit TierAdded(id);
+    }
+
+    // setTierSettings
+    function setTierSettings(
+        bytes32 id,
+        address tokenAddress,
+        uint256 amount,
+        uint256 amountStaked,
+        uint256 includedBlocks
+    ) public {
+        require(owner == msg.sender, "invalid owner");
+        require(tiers[id].id == id, "missing tier");
+        tiers[id].token = tokenAddress;
+        tiers[id].amount = amount;
+        tiers[id].amountStaked = amountStaked;
+        tiers[id].includedBlocks = includedBlocks;
+        // incentiveBlocksMonthly: 0,
+        // incentivePercentageMonthly: 0
+        emit TierUpdated(
+            id,
+            tokenAddress,
+            amount,
+            amountStaked,
+            includedBlocks
+        );
+    }
 
     // withdraws gas token, must be admin
     function withdraw(address payable payee) public {
@@ -168,64 +263,6 @@ contract AnconProtocol is ICS23 {
         emit Withdrawn(payee, balance);
     }
 
-    // protocolPayment handles contract payment protocol fee types
-    function protocolPayment(bytes32 paymentType, address tokenHolder)
-        internal
-    {
-        require(
-            stablecoin.balanceOf(address(tokenHolder)) > 0,
-            "no enough balance"
-        );
-        if ((paymentType) == ENROLL_DAG) {
-            require(
-                stablecoin.transferFrom(
-                    tokenHolder,
-                    address(this),
-                    dagRegistrationFee
-                ),
-                "transfer failed for recipient"
-            );
-            emit ServiceFeePaid(tokenHolder, dagRegistrationFee);
-        }
-        if ((paymentType) == ENROLL_PAYMENT) {
-            require(
-                stablecoin.transferFrom(
-                    tokenHolder,
-                    address(this),
-                    accountRegistrationFee
-                ),
-                "transfer failed for recipient"
-            );
-            emit ServiceFeePaid(tokenHolder, accountRegistrationFee);
-        }
-        if ((paymentType) == SUBMIT_PAYMENT) {
-            require(
-                stablecoin.transferFrom(
-                    tokenHolder,
-                    address(this),
-                    protocolFee
-                ),
-                "transfer failed for recipient"
-            );
-            emit ServiceFeePaid(tokenHolder, protocolFee);
-        } // Transfer tokens to pay service fee
-        nonce[tokenHolder] = nonce[tokenHolder] + 1;
-    }
-
-    function setProtocolFee(uint256 _fee) public {
-        require(owner == msg.sender);
-        protocolFee = _fee;
-    }
-
-    function setAccountRegistrationFee(uint256 _fee) public {
-        require(owner == msg.sender);
-        accountRegistrationFee = _fee;
-    }
-
-    function setDagGraphFee(uint256 _fee) public {
-        require(owner == msg.sender);
-        dagRegistrationFee = _fee;
-    }
 
     function getProtocolHeader(bytes32 moniker)
         public
@@ -249,7 +286,7 @@ contract AnconProtocol is ICS23 {
         bytes memory key,
         bytes memory did,
         Ics23Helper.ExistenceProof memory proof
-    ) public payable returns (bool) {
+    ) public returns (bool) {
         require(keccak256(proof.key) == keccak256(key), "invalid key");
 
         require(verifyProof(moniker, proof), "invalid proof");
@@ -259,8 +296,7 @@ contract AnconProtocol is ICS23 {
             "user already registered"
         );
 
-        protocolPayment(ENROLL_PAYMENT, msg.sender);
-
+        totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][msg.sender] = totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][msg.sender] + 1;
         accountProofs[(did)] = key;
         accountByAddrProofs[msg.sender] = key;
 
@@ -276,7 +312,7 @@ contract AnconProtocol is ICS23 {
         bytes memory key,
         bytes memory packet,
         Ics23Helper.ExistenceProof memory proof
-    ) external payable returns (bool) {
+    ) external returns (bool) {
         // 1. Verify
         require(proofs[key] == false, "proof has been submitted (found key)");
         require(keccak256(proof.key) == keccak256(key), "invalid key");
@@ -288,8 +324,6 @@ contract AnconProtocol is ICS23 {
         require(verifyProof(moniker, proof));
 
         proofs[key] = true;
-
-        protocolPayment(SUBMIT_PAYMENT, sender);
 
         // 2. Submit event
         emit ProofPacketSubmitted(key, packet, moniker);
@@ -342,6 +376,7 @@ contract AnconProtocol is ICS23 {
         return bytes(calculate(proof));
     }
 }
+
 ```
 
 
