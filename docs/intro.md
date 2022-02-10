@@ -73,7 +73,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 ## API - Core Features
 
 - [Verifiable DAG Store](/docs/api/metadata)
-- [Cross chain messaging](/docs/api/durin)
+
 
 ## Tutorials
 
