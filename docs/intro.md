@@ -27,7 +27,7 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 ### XDVNFT.sol
 
 
-- `BSC Testnet`: 0x9Dcc56b169129804B3d81aFa55cD25Fecb23B30e
+- `BSC Testnet`: 0xe756ee6397CAE88E7d3bfec73514D215E2a36f09
 
 ### DAG Network
 
