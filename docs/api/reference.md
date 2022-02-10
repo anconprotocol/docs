@@ -290,16 +290,16 @@ example of the returned object:
 
 DAG storage has the following namespaces available:
 
-#### <moniker> 
+#### moniker
 
 A DAG store creates at init time a genesis, which is called root key. This root key is found in the `<moniker>` namespace.
 
-#### <moniker>/users
+#### moniker/users
 
 DIDs and DAG blocks are created under `<moniker>/users` and the HTTP GET queries by default this namespace. Blocks created here return DAG results.
 
 
-#### <moniker>/graphs
+#### moniker/graphs
 
 Reserved space for subgraph networks
 
