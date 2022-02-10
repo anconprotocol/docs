@@ -5,12 +5,9 @@ sidebar_position: 1
 # API Reference
 
 
-
-
-## `POST /v0/did/web`
 ## `POST /v0/did`
 
-> Creates a new Decentralized Identity
+> Creates a new Decentralized Identity.  Block is duplicated to IPFS by default.
 
 
 ### Parameters
@@ -185,11 +182,9 @@ example of the returned object:
 
 ```
 
-## `PUT /v0/dagjson`
 ## `PUT /v0/dag`
 
-> Mutates a dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID.
-
+> Mutates a dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID.  Block is duplicated to IPFS by default.
 
 ### Parameters
 
@@ -200,7 +195,7 @@ example of the returned object:
 | `signature` | `string` | signature as hex |
 | `data` | `object` | Mutations |
 | `cid` | `string` | cid to mutate |
-
+| `topic` | `string` | topic name |
 
 ### Mutations
 
@@ -249,10 +244,9 @@ example of the returned object:
 ```
 
 
-## `POST /v0/dagjson`
 ## `POST /v0/dag`
 
-> Stores json as dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID.
+> Stores json as dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID. Block is duplicated to IPFS by default.
 
 
 ### Parameters
@@ -266,7 +260,7 @@ example of the returned object:
 | `data` | `object` | object to store |
 | `encrypt` | `bool` | enables JOSE Web Encryption |
 | `authorizedRecipients` | `string array` | comma delimited Ethereum address
-
+| `topic` | `string` | topic name |
 
 
 ### Returns
@@ -288,7 +282,6 @@ example of the returned object:
 
 
 
-## `GET /v0/dagjson/:cid/*path?`
 ## `GET /v0/dag/:cid/*path`
 
 > Reads a dag-json block
@@ -297,16 +290,16 @@ example of the returned object:
 
 DAG storage has the following namespaces available:
 
-#### anconprotocol 
+#### <moniker> 
 
-A DAG store creates at init time a genesis, which is called root key. This root key is found in the `anconprotocol` namespace.
+A DAG store creates at init time a genesis, which is called root key. This root key is found in the `<moniker>` namespace.
 
-#### anconprotocol/users
+#### <moniker>/users
 
-DIDs and DAG blocks are created under `anconprotocol/users` and the HTTP GET queries by default this namespace. Blocks created here return DAG results.
+DIDs and DAG blocks are created under `<moniker>/users` and the HTTP GET queries by default this namespace. Blocks created here return DAG results.
 
 
-#### anconprotocol/graphs
+#### <moniker>/graphs
 
 Reserved space for subgraph networks
 
@@ -314,8 +307,31 @@ Reserved space for subgraph networks
 
 You can query any namespace by adding `namespace` as a query string
 
+
+####  Read cid from namespace path
+
 ```html
 https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yjr67nqsxtocqv7to7q/?namespace=anconprotocol/users/0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6
+```
+
+####  Read cid from namespace path /
+
+
+```html
+https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yjr67nqsxtocqv7to7q/?namespace=/
+```
+
+
+####  Read cid key path
+
+```html
+https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yjr67nqsxtocqv7to7q/key?
+```
+
+####  Read cid with no content node attached in response
+
+```html
+https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yjr67nqsxtocqv7to7q/?compact=false
 ```
 
 ### DAG Response
@@ -324,7 +340,7 @@ https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yj
 ```json
  {
   "commitHash": "/AzWS9kE67z+wRs8htT3G+bRYDLy8V/Jg/cGUBprV/s=",
-  "content": {
+  "contentHash": {
     "/": "baguqeerafkyyjhrgfai6x6djd23ot2d6vytaf35uvg6s2egc7llqkuc7nfua"
   },
   "height": 4892,
@@ -382,7 +398,7 @@ Recommended usage is to create a client load balancer with fallback functionalit
 
 ## `GET /v0/file/:cid/*path`
 
-> Reads a dag-json block
+> Reads a dag-json block.  Block is not duplicated to IPFS.
 
 
 ### Parameters

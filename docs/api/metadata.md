@@ -35,9 +35,6 @@ contract AnconProtocol is ICS23 {
     address public relayer;
 
     IERC20 public stablecoin;
-    uint256 public protocolFee = 0;
-    uint256 public accountRegistrationFee = 0;
-    uint256 public dagRegistrationFee = 0;
     uint256 chainId = 0;
 
     mapping(bytes => bytes) public accountProofs; //did user-assigned proof key
@@ -167,7 +164,11 @@ contract AnconProtocol is ICS23 {
         } else {
             // tier has no more free blocks for this epoch, charge protocol fee
             require(
-                token.transferFrom(msg.sender, address(this), tiers[t.id].amount),
+                token.transferFrom(
+                    msg.sender,
+                    address(this),
+                    tiers[t.id].amount
+                ),
                 "transfer failed for recipient"
             );
         }
@@ -181,10 +182,18 @@ contract AnconProtocol is ICS23 {
         // set hash
         relayerHashTable[moniker][height] = rootHash;
         latestRootHashTable[moniker] = rootHash;
-        emit ServiceFeePaid(msg.sender, moniker, t.id, tiers[t.id].token, tiers[t.id].amount);
+        emit ServiceFeePaid(
+            msg.sender,
+            moniker,
+            t.id,
+            tiers[t.id].token,
+            tiers[t.id].amount
+        );
 
         seq = seq + 1;
-        totalHeaderUpdatesByDagGraph[msg.sender] = totalHeaderUpdatesByDagGraph[msg.sender] + 1;
+        totalHeaderUpdatesByDagGraph[msg.sender] =
+            totalHeaderUpdatesByDagGraph[msg.sender] +
+            1;
         emit HeaderUpdated(moniker);
     }
 
@@ -263,7 +272,6 @@ contract AnconProtocol is ICS23 {
         emit Withdrawn(payee, balance);
     }
 
-
     function getProtocolHeader(bytes32 moniker)
         public
         view
@@ -296,7 +304,11 @@ contract AnconProtocol is ICS23 {
             "user already registered"
         );
 
-        totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][msg.sender] = totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][msg.sender] + 1;
+        totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][msg.sender] =
+            totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][
+                msg.sender
+            ] +
+            1;
         accountProofs[(did)] = key;
         accountByAddrProofs[msg.sender] = key;
 
@@ -324,7 +336,13 @@ contract AnconProtocol is ICS23 {
         require(verifyProof(moniker, proof));
 
         proofs[key] = true;
+        totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][sender] =
+            totalSubmittedByDagGraphUser[whitelistedDagGraph[moniker]][
+                sender
+            ] +
+            1;
 
+        nonce[sender] = nonce[sender] + 1;
         // 2. Submit event
         emit ProofPacketSubmitted(key, packet, moniker);
 
