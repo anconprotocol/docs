@@ -47,8 +47,11 @@ Node manages offchain data integrations and trusted offchain gateways.  It has D
 
 - `BSC Mainnet`: 0x190cd8F5C699FCA0762fF23877a06fD2E8ae3Db2
 
-### XDVNFT.sol
+### Ancon Token
 
+- `BSC Mainnet`: 0x217f3bdbb0358082c99e1de01c47d1b2dba45ad5
+
+### XDVNFT.sol
 
 - `BSC Mainnet`: Pending release
 
