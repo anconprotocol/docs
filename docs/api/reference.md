@@ -348,7 +348,11 @@ https://api.ancon.did.pa/v0/dagjson/baguqeerac33uoqmawkru523zwubchxitrsinqskl7yj
   "key": "L2FuY29ucHJvdG9jb2wvYmFmeXJlaWJxaXFiY2FmbnptanFtdjNpeTd1emppaW1uZWlxMmNxc3AzYm1odGNqYnJ3eXF3dnl3YmkvdXNlci9iYWd1cWVlcmFma3l5amhyZ2ZhaTZ4NmRqZDIzb3QyZDZ2eXRhZjM1dXZnNnMyZWdjN2xscWt1YzduZnVh",
   "parent": "/anconprotocol/bafyreibqiqbcafnzmjqmv3iy7uzjiimneiq2cqsp3bmhtcjbrwyqwvywbi/user",
   "signature": "0x971d3282785c390336860c5f5e5e1c7058f028738da7a003b8d81da7182cd6880798f8608e74d381c77d071f88adfa20e528bed1afba05f3c564bc6b59ec2dc61c",
-  "timestamp": 1642350132
+  "timestamp": 1642350132,
+  "content": {
+    "datafield1": "example1",
+    "datafield2": "example2"
+  }
 }
 ```
 
