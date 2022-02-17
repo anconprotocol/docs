@@ -182,7 +182,7 @@ example of the returned object:
 
 ```
 
-## `PUT /v0/dag`
+<!-- ## `PUT /v0/dag`
 
 > Mutates a dag-json in users path. Must have registerd DID and messasge must be signed with signature matching DID.  Block is duplicated to IPFS by default.
 
@@ -241,7 +241,7 @@ example of the returned object:
     "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
   }
 }
-```
+``` -->
 
 
 ## `POST /v0/dag`
