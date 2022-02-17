@@ -260,7 +260,7 @@ example of the returned object:
 | `data` | `object` | object to store |
 | `encrypt` | `bool` | enables JOSE Web Encryption |
 | `authorizedRecipients` | `string array` | comma delimited Ethereum address
-| `topic` | `string` | topic name |
+| `topic` | `string` | topic name (optional) |
 
 
 ### Returns
@@ -273,8 +273,10 @@ example of the returned object:
 
 ```json
 {
-  "cid": {
-    "/": "baguqeeraui7hue3i2smgzmzdqmrxrnicqpoggayqkoocqdcjf3q5n66smdlq"
+  "cid": "baguqeerahfquomle34dhb3f53b2z3i2w33wvw3lgfb6hse6xh7rfxmxv5xfa",
+  "ipfs": {
+    "metadata": "baguqeerap5tqgv4w5ps7sm5dd2fbohfjmkgcgojxrqcxacckbfaev7fkunea",
+    "tx": "baguqeerahfquomle34dhb3f53b2z3i2w33wvw3lgfb6hse6xh7rfxmxv5xfa"
   }
 }
 ```
