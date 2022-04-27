@@ -14,6 +14,8 @@
   --ifm-color-primary-lighter: rgb(102, 212, 189);
   --ifm-color-primary-lightest: rgb(146, 224, 208);
   --ifm-code-font-size: 95%;
+
+  background:linear-gradient(130.92deg, rgb(58, 28, 113) -14.59%, rgb(215, 109, 119) 38.47%, rgb(255, 175, 123) 98.62%)
 }
 
 .docusaurus-highlight-code-line {
